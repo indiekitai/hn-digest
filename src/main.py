@@ -18,11 +18,9 @@ from .summarizer import (
     format_digest_markdown,
     format_digest_telegram,
 )
+from .storage import save_digest, load_digest, load_today, list_digests, get_stats
 
 load_dotenv()
-
-# In-memory cache (replace with Redis for production)
-_cache: dict[str, DailyDigest] = {}
 
 
 @asynccontextmanager
@@ -55,11 +53,15 @@ class DigestResponse(BaseModel):
 
 
 async def generate_digest(force: bool = False) -> DailyDigest:
-    """Generate or return cached digest for today."""
+    """Generate or return cached/stored digest for today."""
     today = date.today().isoformat()
     
-    if not force and today in _cache:
-        return _cache[today]
+    # Try loading from disk first
+    if not force:
+        existing = load_digest(today)
+        if existing:
+            print(f"📂 Loaded existing digest for {today}")
+            return existing
     
     # Fetch stories
     print(f"📡 Fetching HN stories for {today}...")
@@ -74,9 +76,9 @@ async def generate_digest(force: bool = False) -> DailyDigest:
     summarizer = create_summarizer()
     digest = summarizer.summarize_stories(stories, max_stories=10)
     
-    # Cache
-    _cache[today] = digest
-    print(f"✅ Digest generated: {len(digest.stories)} stories")
+    # Save to disk
+    filepath = save_digest(digest)
+    print(f"💾 Saved digest to {filepath}")
     
     return digest
 
@@ -91,6 +93,9 @@ async def root():
             "/digest/markdown": "Get today's digest (Markdown)",
             "/digest/telegram": "Get today's digest (Telegram HTML)",
             "/digest/refresh": "Force refresh today's digest",
+            "/digests": "List all available digests",
+            "/digests/{date}": "Get digest for a specific date",
+            "/stats": "Storage statistics",
         }
     }
 
@@ -154,6 +159,46 @@ async def refresh_digest():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/digests")
+async def get_digest_list(limit: int = 30):
+    """List available digests by date."""
+    dates = list_digests(limit)
+    return {"digests": dates, "count": len(dates)}
+
+
+@app.get("/digests/{date_str}")
+async def get_digest_by_date(date_str: str):
+    """Get digest for a specific date."""
+    digest = load_digest(date_str)
+    if not digest:
+        raise HTTPException(status_code=404, detail=f"No digest found for {date_str}")
+    
+    return DigestResponse(
+        date=digest.date,
+        intro=digest.intro,
+        story_count=len(digest.stories),
+        stories=[
+            {
+                "title": ds.story.title,
+                "url": ds.story.url or ds.story.hn_url,
+                "hn_url": ds.story.hn_url,
+                "score": ds.story.score,
+                "comments": ds.story.descendants,
+                "summary_zh": ds.summary_zh,
+                "category": ds.category,
+                "importance": ds.importance,
+            }
+            for ds in digest.stories
+        ]
+    )
+
+
+@app.get("/stats")
+async def get_storage_stats():
+    """Get storage statistics."""
+    return get_stats()
 
 
 @app.get("/health")
