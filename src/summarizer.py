@@ -1,9 +1,9 @@
 """
-AI Summarizer - Generate Chinese digest from HN stories
+AI Summarizer - Generate Chinese digest from HN stories (Gemini version)
 """
 import os
+import json
 from dataclasses import dataclass
-import anthropic
 import httpx
 
 from .scraper import Story
@@ -44,15 +44,36 @@ async def fetch_article_content(url: str, max_chars: int = 8000) -> str | None:
 
 def create_summarizer(api_key: str | None = None) -> "Summarizer":
     """Create a summarizer instance."""
-    key = api_key or os.getenv("ANTHROPIC_API_KEY")
+    key = api_key or os.getenv("GOOGLE_API_KEY")
     if not key:
-        raise ValueError("ANTHROPIC_API_KEY required")
+        raise ValueError("GOOGLE_API_KEY required")
     return Summarizer(key)
 
 
 class Summarizer:
     def __init__(self, api_key: str):
-        self.client = anthropic.Anthropic(api_key=api_key)
+        self.api_key = api_key
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+    
+    def _call_gemini(self, prompt: str) -> str:
+        """Call Gemini API synchronously."""
+        import requests
+        
+        response = requests.post(
+            f"{self.api_url}?key={self.api_key}",
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {
+                    "temperature": 0.7,
+                    "maxOutputTokens": 2000,
+                }
+            },
+            headers={"Content-Type": "application/json"},
+            timeout=60
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["candidates"][0]["content"]["parts"][0]["text"]
     
     def summarize_stories(self, stories: list[Story], max_stories: int = 10) -> DailyDigest:
         """Generate a daily digest from stories."""
@@ -95,20 +116,14 @@ class Summarizer:
 
 只输出 JSON，不要其他内容。"""
 
-        response = self.client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=2000,
-            messages=[{"role": "user", "content": prompt}]
-        )
+        text = self._call_gemini(prompt).strip()
         
-        # Parse response
-        import json
-        text = response.content[0].text.strip()
         # Handle markdown code blocks
         if text.startswith("```"):
             text = text.split("```")[1]
             if text.startswith("json"):
                 text = text[4:]
+        text = text.strip()
         
         data = json.loads(text)
         
