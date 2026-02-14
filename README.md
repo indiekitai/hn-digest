@@ -1,5 +1,8 @@
 # 🍊 HN Digest
 
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
 AI-powered daily Hacker News digest in Chinese.
 
 每天自动抓取 Hacker News 热门文章，用 Claude 生成中文摘要，帮你快速了解科技圈动态。
