@@ -1,5 +1,5 @@
 [project]
-name = "hn-digest"
+name = "indiekit-hn-digest"
 version = "0.1.0"
 description = "AI-powered daily Hacker News digest in Chinese"
 requires-python = ">=3.11"
