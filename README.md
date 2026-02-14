@@ -42,6 +42,22 @@ uvicorn src.main:app --reload --port 8080
 | `POST /digest/refresh` | Force refresh today's digest |
 | `GET /health` | Health check |
 
+## API 使用示例
+
+```bash
+# 获取今日摘要 (JSON)
+curl https://hn.indiekit.ai/digest
+
+# 获取 Markdown 格式
+curl https://hn.indiekit.ai/digest/markdown
+
+# 强制刷新摘要
+curl -X POST https://hn.indiekit.ai/digest/refresh
+
+# 健康检查
+curl https://hn.indiekit.ai/health
+```
+
 ## Example Output
 
 ```json
