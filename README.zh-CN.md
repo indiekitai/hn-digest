@@ -5,44 +5,44 @@
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
-AI-powered daily Hacker News digest in Chinese.
+AI 驱动的 Hacker News 每日中文摘要。
 
 每天自动抓取 Hacker News 热门文章，用 Claude 生成中文摘要，帮你快速了解科技圈动态。
 
-## Features
+## 特性
 
 - 📡 自动抓取 HN Top/Best/Show 故事
 - 🤖 Claude AI 生成中文摘要和分类
 - 🔥 自动识别重要性等级
 - 📱 支持 Telegram/Web/API 多渠道
 
-## Quick Start
+## 快速开始
 
 ```bash
-# Clone
+# 克隆
 cd /root/source/side-projects/hn-digest
 
-# Install
+# 安装
 uv pip install -e .
 
-# Configure
+# 配置
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# 编辑 .env 添加 ANTHROPIC_API_KEY
 
-# Run
+# 运行
 uvicorn src.main:app --reload --port 8080
 ```
 
-## API Endpoints
+## API 端点
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | API info |
-| `GET /digest` | Today's digest (JSON) |
-| `GET /digest/markdown` | Today's digest (Markdown) |
-| `GET /digest/telegram` | Today's digest (Telegram HTML) |
-| `POST /digest/refresh` | Force refresh today's digest |
-| `GET /health` | Health check |
+| 端点 | 说明 |
+|------|------|
+| `GET /` | API 信息 |
+| `GET /digest` | 今日摘要（JSON） |
+| `GET /digest/markdown` | 今日摘要（Markdown） |
+| `GET /digest/telegram` | 今日摘要（Telegram HTML） |
+| `POST /digest/refresh` | 强制刷新今日摘要 |
+| `GET /health` | 健康检查 |
 
 ## API 使用示例
 
@@ -60,7 +60,7 @@ curl -X POST https://hn.indiekit.ai/digest/refresh
 curl https://hn.indiekit.ai/health
 ```
 
-## Example Output
+## 输出示例
 
 ```json
 {
@@ -79,23 +79,23 @@ curl https://hn.indiekit.ai/health
 }
 ```
 
-## Deploy
+## 部署
 
 ```bash
 # Docker
 docker build -t hn-digest .
 docker run -p 8080:8080 -e ANTHROPIC_API_KEY=xxx hn-digest
 
-# Or just run directly
+# 或者直接运行
 python -m src.main
 ```
 
-## Future Ideas
+## 未来计划
 
-- [ ] Newsletter subscription (email)
-- [ ] Telegram bot integration
-- [ ] Historical archive
-- [ ] Personalized recommendations
+- [ ] 邮件订阅（Newsletter）
+- [ ] Telegram bot 集成
+- [ ] 历史归档
+- [ ] 个性化推荐
 - [ ] RSS feed
 
 ## License
