@@ -38,10 +38,11 @@
 
   <script>
     const DAYS_TO_KEEP = 7;
-    const DATA_DIR = 'data/digests';
+    const DATA_DIR = '/hn-digest/data/digests';
+    const DATES_FILE = '/hn-digest/data/dates.json';
 
     async function loadDates() {
-      const res = await fetch(DATA_DIR + '/../dates.json');
+      const res = await fetch(DATES_FILE);
       const dates = await res.json();
       const container = document.getElementById('dateNav');
       const today = new Date().toISOString().split('T')[0];
