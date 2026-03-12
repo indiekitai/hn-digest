@@ -30,7 +30,7 @@
 <body>
   <h1>🔥 HN Digest</h1>
   <div class="date-nav" id="dateNav"></div>
-  <div class="intro" id="intro"></div>
+  <div class="intro" id="intro">Loading...</div>
   <div id="stories"></div>
   <footer>
     <p>数据来源: Hacker News | 由 AI 每日整理</p>
@@ -101,6 +101,10 @@
     }
 
     loadDates();
+    
+    // Debug: log everything
+    window.addEventListener('error', e => console.error('Global error:', e));
+    window.addEventListener('unhandledrejection', e => console.error('Unhandled rejection:', e));
   </script>
 </body>
 </html>
