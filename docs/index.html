@@ -42,50 +42,62 @@
     const DATES_FILE = '/hn-digest/data/dates.json';
 
     async function loadDates() {
-      const res = await fetch(DATES_FILE);
-      const dates = await res.json();
-      const container = document.getElementById('dateNav');
-      const today = new Date().toISOString().split('T')[0];
-      
-      dates.slice(0, DAYS_TO_KEEP).forEach(date => {
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = date;
-        a.dataset.date = date;
-        if (date === today || (!dates.includes(today) && date === dates[0])) {
-          a.classList.add('active');
-        }
-        a.onclick = (e) => {
-          e.preventDefault();
-          document.querySelectorAll('.date-nav a').forEach(x => x.classList.remove('active'));
-          a.classList.add('active');
-          loadDigest(date);
-        };
-        container.appendChild(a);
-      });
-      
-      const activeDate = document.querySelector('.date-nav a.active')?.dataset.date || dates[0];
-      loadDigest(activeDate);
+      try {
+        const res = await fetch(DATES_FILE);
+        if (!res.ok) throw new Error('Failed to load dates: ' + res.status);
+        const dates = await res.json();
+        const container = document.getElementById('dateNav');
+        const today = new Date().toISOString().split('T')[0];
+        
+        dates.slice(0, DAYS_TO_KEEP).forEach(date => {
+          const a = document.createElement('a');
+          a.href = '#';
+          a.textContent = date;
+          a.dataset.date = date;
+          if (date === today || (!dates.includes(today) && date === dates[0])) {
+            a.classList.add('active');
+          }
+          a.onclick = (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.date-nav a').forEach(x => x.classList.remove('active'));
+            a.classList.add('active');
+            loadDigest(date);
+          };
+          container.appendChild(a);
+        });
+        
+        const activeDate = document.querySelector('.date-nav a.active')?.dataset.date || dates[0];
+        loadDigest(activeDate);
+      } catch (err) {
+        document.getElementById('dateNav').innerHTML = '<p style="color:red">Error: ' + err.message + '</p>';
+        console.error(err);
+      }
     }
 
     async function loadDigest(date) {
-      const res = await fetch(DATA_DIR + '/' + date + '.json');
-      const data = await res.json();
-      
-      document.getElementById('intro').textContent = data.intro;
-      
-      const container = document.getElementById('stories');
-      container.innerHTML = data.stories.map(s => `
-        <div class="story importance-${s.importance || 3}">
-          <h2><a href="${s.url}" target="_blank">${s.title}</a>${s.category ? '<span class="category">' + s.category + '</span>' : ''}</h2>
-          <div class="meta">
-            <span class="score">${s.score} points</span> by ${s.by} | 
-            <a href="${s.hn_url}" target="_blank">HN</a> | 
-            ${s.descendants} comments
+      try {
+        const res = await fetch(DATA_DIR + '/' + date + '.json');
+        if (!res.ok) throw new Error('Failed to load: ' + res.status);
+        const data = await res.json();
+        
+        document.getElementById('intro').textContent = data.intro;
+        
+        const container = document.getElementById('stories');
+        container.innerHTML = data.stories.map(s => `
+          <div class="story importance-${s.importance || 3}">
+            <h2><a href="${s.url}" target="_blank">${s.title}</a>${s.category ? '<span class="category">' + s.category + '</span>' : ''}</h2>
+            <div class="meta">
+              <span class="score">${s.score} points</span> by ${s.by} | 
+              <a href="${s.hn_url}" target="_blank">HN</a> | 
+              ${s.descendants} comments
+            </div>
+            <div class="summary">${s.summary_zh || ''}</div>
           </div>
-          <div class="summary">${s.summary_zh || ''}</div>
-        </div>
-      `).join('');
+        `).join('');
+      } catch (err) {
+        document.getElementById('stories').innerHTML = '<p style="color:red">Error: ' + err.message + '</p>';
+        console.error(err);
+      }
     }
 
     loadDates();
