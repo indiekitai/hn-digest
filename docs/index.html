@@ -43,9 +43,13 @@
 
     async function loadDates() {
       try {
+        console.log('Loading dates from:', DATES_FILE);
         const res = await fetch(DATES_FILE);
-        if (!res.ok) throw new Error('Failed to load dates: ' + res.status);
-        const dates = await res.json();
+        console.log('Response:', res.status, res.headers.get('content-type'));
+        const text = await res.text();
+        console.log('Raw text:', text);
+        const dates = JSON.parse(text);
+        console.log('Dates:', dates);
         const container = document.getElementById('dateNav');
         const today = new Date().toISOString().split('T')[0];
         
